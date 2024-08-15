@@ -5,6 +5,13 @@ on:
     branches:
       - master
 
+env:
+  AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+  AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+  AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
+  AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+  AZURE_STORAGE_ACCOUNT_ACCESS_KEY: ${{secrets.AZURE_STORAGE_ACCOUNT_ACCESS_KEY}}
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
@@ -13,25 +20,15 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v2
 
-    - name: Azure Login
-      uses: azure/login@v1
-      with:
-        creds: '{ 
-          "clientId": "${{ secrets.AZURE_CLIENT_ID }}",
-          "clientSecret": "${{ secrets.AZURE_CLIENT_SECRET }}",
-          "subscriptionId": "${{ secrets.AZURE_SUBSCRIPTION_ID }}",
-          "tenantId": "${{ secrets.AZURE_TENANT_ID }}"
-        }'
-
     - name: Set up Terraform
       uses: hashicorp/setup-terraform@v2
 
     - name: Terraform Init
-      run: terraform init
+      run: terraform init  -var "subscription_id=${{ secrets.AZURE_SUBSCRIPTION_ID }}" -var "client_id=${{ secrets.AZURE_CLIENT_ID }}" -var "client_secret=${{ secrets.AZURE_CLIENT_SECRET }}" -var "tenant_id=${{ secrets.AZURE_TENANT_ID }}" -var "storage_account_access_key"=${{secrets.AZURE_STORAGE_ACCOUNT_ACCESS_KEY}}
       working-directory: ./terraform
 
     - name: Terraform Apply
-      run: terraform apply -auto-approve -var "subscription_id=${{ secrets.AZURE_SUBSCRIPTION_ID }}" -var "client_id=${{ secrets.AZURE_CLIENT_ID }}" -var "client_secret=${{ secrets.AZURE_CLIENT_SECRET }}" -var "tenant_id=${{ secrets.AZURE_TENANT_ID }}"
+      run: terraform apply -auto-approve -var "subscription_id=${{ secrets.AZURE_SUBSCRIPTION_ID }}" -var "client_id=${{ secrets.AZURE_CLIENT_ID }}" -var "client_secret=${{ secrets.AZURE_CLIENT_SECRET }}" -var "tenant_id=${{ secrets.AZURE_TENANT_ID }}" -var "storage_account_access_key"=${{secrets.AZURE_STORAGE_ACCOUNT_ACCESS_KEY}}
       working-directory: ./terraform
 
     - name: Configure kubectl
@@ -41,7 +38,7 @@ jobs:
       working-directory: ./terraform
 
     - name: Create Kubernetes namespace
-      run: kubectl create namespace sock-shop || echo "Namespace already exists"
+      run: kubectl create namespace sock-shop
 
     - name: Apply Kubernetes manifests
       run: kubectl apply -f complete-demo.yaml
@@ -51,3 +48,4 @@ jobs:
       run: |
         az aks enable-addons --resource-group aks-resource-group --name aks-cluster --addons monitoring
         az monitor log-analytics workspace create --resource-group aks-resource-group --workspace-name aks-monitor
+      working-directory: ./terraform

@@ -13,3 +13,6 @@ variable "client_secret" {
 variable "tenant_id" {
   type = string
 }
+variable "storage_account_access_key"{
+    type = string
+}

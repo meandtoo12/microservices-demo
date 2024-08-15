@@ -13,6 +13,7 @@ terraform {
     storage_account_name  = "mytfstateforazure"
     container_name        = "tfstate"
     key                   = "terraform.tfstate"  # This is the name of the state file within the container
+    access_key            = var.storage_account_access_key
   }
 }
 
