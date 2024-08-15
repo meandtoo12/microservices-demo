@@ -7,14 +7,50 @@ provider "azurerm" {
   tenant_id       = var.tenant_id
 }
 
+resource  "azurerm_resource_group"  "appgrp" {
+name  =  "rg-name"
+location  =  "North Europe"
+}
+  
+resource  "azurerm_storage_account"  "azurestoragebackendaccount" {
+name  =  "azurestoragebackendaccount"
+resource_group_name  =  "rg-name"
+location  =  "North Europe"
+account_tier  =  "Standard"
+account_replication_type  =  "LRS"
+account_kind  =  "StorageV2"
+depends_on  =  [
+azurerm_resource_group.appgrp
+]
+}
+
+resource  "azurerm_storage_container"  "data" {
+name  =  "data"
+storage_account_name  =  "azurestoragebackendaccount"
+container_access_type  =  "blob"
+depends_on  =  [
+azurerm_storage_account.azurestoragebackendaccount
+]
+}
+
+resource  "azurerm_storage_blob"  "maintf" {
+name  =  "main.tf"
+storage_account_name  =  "azurestoragebackendaccount"
+storage_container_name  =  "data"
+type  =  "Block"
+source  =  "main.tf"
+depends_on  =  [
+azurerm_storage_container.data
+]
+}
+
 terraform {
-  backend "azurerm" {
-    resource_group_name   = "my-terraform-rg"
-    storage_account_name  = "mytfstateforazure"
-    container_name        = "tfstate"
-    key                   = "terraform.tfstate"  # This is the name of the state file within the container
-    access_key            = var.storage_account_access_key
-  }
+backend  "azurerm" {
+resource_group_name  =  "app-grp"
+storage_account_name  =  "azurestoragebackendaccount"
+container_name  =  "data"
+key  =  "terraform.tfstate"
+}
 }
 
 resource "azurerm_resource_group" "aks_rg" {
