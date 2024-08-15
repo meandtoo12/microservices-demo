@@ -1,3 +1,21 @@
+terraform {
+  required_providers {
+    azurerm = {
+      source  = "hashicorp/azurerm"
+      version = "~>3.0"
+    }
+  }
+  backend "azurerm" {
+      resource_group_name  = "tfstate"
+      storage_account_name = "<storage_account_name>"
+      container_name       = "tfstate"
+      key                  = "terraform.tfstate"
+      access_key           = "MzRokRiR6ILSrhdfh3GMgvy/c/f/1oqpacw9CQ+d2P5tIIqISJ2kC4I4AdXIuPn7eVW6iAPFOE+W+AStUhAobw=="
+  }
+
+}
+
+
 provider "azurerm" {
   features {}
 
@@ -60,7 +78,7 @@ resource "azurerm_kubernetes_cluster" "aks_cluster" {
   default_node_pool {
     name       = "default"
     node_count = 1
-    vm_size    = "Standard_D8ds_v5"
+    vm_size    = " Standard_DC4as_v5 "
   }
 
   identity {
