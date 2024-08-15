@@ -3,7 +3,7 @@ name: Deploy AKS and Kubernetes Resources
 on:
   push:
     branches:
-      - main
+      - master
 
 env:
   AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
