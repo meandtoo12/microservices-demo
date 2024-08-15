@@ -1,12 +1,3 @@
-terraform {
-  backend "azurerm" {
-    resource_group_name   = "my-terraform-rg"
-    storage_account_name  = "mytfstateforazure"
-    container_name        = "tfstate"
-    key                   = "terraform.tfstate"  # This is the name of the state file within the container
-  }
-}
-
 provider "azurerm" {
   features {}
 
@@ -14,6 +5,15 @@ provider "azurerm" {
   client_id       = var.client_id
   client_secret   = var.client_secret
   tenant_id       = var.tenant_id
+}
+
+terraform {
+  backend "azurerm" {
+    resource_group_name   = "my-terraform-rg"
+    storage_account_name  = "mytfstateforazure"
+    container_name        = "tfstate"
+    key                   = "terraform.tfstate"  # This is the name of the state file within the container
+  }
 }
 
 resource "azurerm_resource_group" "aks_rg" {
