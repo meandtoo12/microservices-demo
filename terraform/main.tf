@@ -44,14 +44,7 @@ azurerm_storage_container.data
 ]
 }
 
-terraform {
-backend  "azurerm" {
-resource_group_name  =  "app-grp"
-storage_account_name  =  "azurestoragebackendaccount"
-container_name  =  "data"
-key  =  "terraform.tfstate"
-}
-}
+
 
 resource "azurerm_resource_group" "aks_rg" {
   name     = "aks-resource-group"
