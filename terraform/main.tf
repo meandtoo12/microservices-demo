@@ -12,8 +12,8 @@ name  =  "rg-name"
 location  =  "North Europe"
 }
   
-resource  "azurerm_storage_account"  "azurestoragebackendaccount" {
-name  =  "azurestoragebackendaccount"
+resource  "azurerm_storage_account"  "azurestoragebackend" {
+name  =  "azurestoragebackend"
 resource_group_name  =  "rg-name"
 location  =  "North Europe"
 account_tier  =  "Standard"
@@ -26,16 +26,16 @@ azurerm_resource_group.appgrp
 
 resource  "azurerm_storage_container"  "data" {
 name  =  "data"
-storage_account_name  =  "azurestoragebackendaccount"
+storage_account_name  =  "azurestoragebackend"
 container_access_type  =  "blob"
 depends_on  =  [
-azurerm_storage_account.azurestoragebackendaccount
+azurerm_storage_account.azurestoragebackend
 ]
 }
 
 resource  "azurerm_storage_blob"  "maintf" {
 name  =  "main.tf"
-storage_account_name  =  "azurestoragebackendaccount"
+storage_account_name  =  "azurestoragebackend"
 storage_container_name  =  "data"
 type  =  "Block"
 source  =  "main.tf"
