@@ -1,3 +1,12 @@
+terraform {
+  backend "azurerm" {
+    resource_group_name   = "my-terraform-rg"
+    storage_account_name  = "mytfstateforazure"
+    container_name        = "tfstate"
+    key                   = "terraform.tfstate"  # This is the name of the state file within the container
+  }
+}
+
 provider "azurerm" {
   features {}
 
