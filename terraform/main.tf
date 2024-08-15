@@ -12,8 +12,8 @@ name  =  "rg-name"
 location  =  "North Europe"
 }
   
-resource  "azurerm_storage_account"  "azurestoragebackend" {
-name  =  "azurestoragebackend"
+resource  "azurerm_storage_account"  "azure2468backend" {
+name  =  "azure2468backend"
 resource_group_name  =  "rg-name"
 location  =  "North Europe"
 account_tier  =  "Standard"
@@ -26,16 +26,16 @@ azurerm_resource_group.appgrp
 
 resource  "azurerm_storage_container"  "data" {
 name  =  "data"
-storage_account_name  =  "azurestoragebackend"
+storage_account_name  =  "azure2468backend"
 container_access_type  =  "blob"
 depends_on  =  [
-azurerm_storage_account.azurestoragebackend
+azurerm_storage_account.azure2468backend
 ]
 }
 
 resource  "azurerm_storage_blob"  "maintf" {
 name  =  "main.tf"
-storage_account_name  =  "azurestoragebackend"
+storage_account_name  =  "azure2468backend"
 storage_container_name  =  "data"
 type  =  "Block"
 source  =  "main.tf"
@@ -60,7 +60,7 @@ resource "azurerm_kubernetes_cluster" "aks_cluster" {
   default_node_pool {
     name       = "default"
     node_count = 1
-    vm_size    = "Standard_D2a_v4"
+    vm_size    = "Standard_D8ds_v5"
   }
 
   identity {
