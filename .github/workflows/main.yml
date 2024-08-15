@@ -1,0 +1,50 @@
+name: Deploy AKS and Kubernetes Resources
+
+on:
+  push:
+    branches:
+      - main
+
+env:
+  AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+  AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+  AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
+  AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Set up Terraform
+      uses: hashicorp/setup-terraform@v2
+
+    - name: Terraform Init
+      run: terraform init
+      working-directory: ./terraform
+
+    - name: Terraform Apply
+      run: terraform apply -auto-approve
+      working-directory: ./terraform
+
+    - name: Configure kubectl
+      run: |
+        echo "${{ steps.terraform.outputs.kube_config }}" > $HOME/.kube/config
+      id: terraform
+      working-directory: ./terraform
+
+    - name: Create Kubernetes namespace
+      run: kubectl create namespace sock-shop
+
+    - name: Apply Kubernetes manifests
+      run: kubectl apply -f complete-demo.yaml
+      working-directory: ./deploy/kubernetes
+
+    - name: Set up Azure Monitor for AKS
+      run: |
+        az aks enable-addons --resource-group aks-resource-group --name aks-cluster --addons monitoring
+        az monitor log-analytics workspace create --resource-group aks-resource-group --workspace-name aks-monitor
+      working-directory: ./terraform
