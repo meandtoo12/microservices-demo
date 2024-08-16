@@ -5,9 +5,14 @@ terraform {
       version = "~>3.0"
     }
   }
-
+ backend "azurerm" {
+      resource_group_name  = "my-terraform-rg"
+      storage_account_name = "mytfstateforazure"
+      container_name       = "tfstate"
+      key                  = "terraform.tfstate"
+  }
+  
 }
-
 
 provider "azurerm" {
   features {}
@@ -17,44 +22,6 @@ provider "azurerm" {
   client_secret   = var.client_secret
   tenant_id       = var.tenant_id
 }
-
-resource  "azurerm_resource_group"  "appgrp" {
-name  =  "rg-name"
-location  =  "North Europe"
-}
-  
-resource  "azurerm_storage_account"  "azure2468backend" {
-name  =  "azure2468backend"
-resource_group_name  =  "rg-name"
-location  =  "North Europe"
-account_tier  =  "Standard"
-account_replication_type  =  "LRS"
-account_kind  =  "StorageV2"
-depends_on  =  [
-azurerm_resource_group.appgrp
-]
-}
-
-resource  "azurerm_storage_container"  "data" {
-name  =  "data"
-storage_account_name  =  "azure2468backend"
-container_access_type  =  "blob"
-depends_on  =  [
-azurerm_storage_account.azure2468backend
-]
-}
-
-resource  "azurerm_storage_blob"  "maintf" {
-name  =  "main.tf"
-storage_account_name  =  "azure2468backend"
-storage_container_name  =  "data"
-type  =  "Block"
-source  =  "main.tf"
-depends_on  =  [
-azurerm_storage_container.data
-]
-}
-
 
 
 resource "azurerm_resource_group" "aks_rg" {

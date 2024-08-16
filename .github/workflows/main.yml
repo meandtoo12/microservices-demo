@@ -10,6 +10,7 @@ env:
   AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
   AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
   AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+  AZURE_STORAGE_ACCESS_KEY: ${{ secrets.AZURE_STORAGE_ACCOUNT_ACCESS_KEY }}
 
 jobs:
   deploy:
@@ -23,22 +24,51 @@ jobs:
       uses: hashicorp/setup-terraform@v2
 
     - name: Terraform Init
+      env:
+        ARM_ACCESS_KEY: ${{ secrets.AZURE_STORAGE_ACCOUNT_ACCESS_KEY }}
       run: terraform init  -var "subscription_id=${{ secrets.AZURE_SUBSCRIPTION_ID }}" -var "client_id=${{ secrets.AZURE_CLIENT_ID }}" -var "client_secret=${{ secrets.AZURE_CLIENT_SECRET }}" -var "tenant_id=${{ secrets.AZURE_TENANT_ID }}"
       working-directory: ./terraform
 
+    - name: Terraform Validate
+      env:
+        ARM_ACCESS_KEY: ${{ secrets.AZURE_STORAGE_ACCESS_KEY }}
+      run: terraform validate
+      working-directory: ./terraform
+
+    - name: Terraform Plan
+      env:
+        ARM_ACCESS_KEY: ${{ secrets.AZURE_STORAGE_ACCESS_KEY }}
+      run: terraform plan -out=tfplan
+      working-directory: ./terraform
+
     - name: Terraform Apply
+      env:
+        ARM_ACCESS_KEY: ${{ secrets.AZURE_STORAGE_ACCOUNT_ACCESS_KEY }}
       run: terraform apply -auto-approve -var "subscription_id=${{ secrets.AZURE_SUBSCRIPTION_ID }}" -var "client_id=${{ secrets.AZURE_CLIENT_ID }}" -var "client_secret=${{ secrets.AZURE_CLIENT_SECRET }}" -var "tenant_id=${{ secrets.AZURE_TENANT_ID }}" 
       working-directory: ./terraform
 
-    - name: Configure kubectl
-      run: |
-        echo "${{ steps.terraform.outputs.kube_config }}" > $HOME/.kube/config
-      id: terraform
+    - name: Terraform Output
+      id: tf-output
+      run: echo "::set-output name=kube_config::$(terraform output -raw kube_config)"
       working-directory: ./terraform
 
-    - name: Create Kubernetes namespace
-      run: kubectl create namespace sock-shop
+    - name: Create .kube directory
+      run: mkdir -p $HOME/.kube
 
+    - name: Configure kubectl
+      run: |
+        echo "${{ steps.tf-output.outputs.kube_config }}" > $HOME/.kube/config
+        chmod 600 $HOME/.kube/config
+
+    - name: Create Kubernetes namespace
+      run: |
+        kubectl apply -f - <<EOF
+        apiVersion: v1
+        kind: Namespace
+        metadata:
+          name: "sock-shop"
+        EOF
+      
     - name: Apply Kubernetes manifests
       run: kubectl apply -f complete-demo.yaml
       working-directory: ./deploy/kubernetes
