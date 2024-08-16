@@ -61,13 +61,13 @@ jobs:
 
     - name: Create Kubernetes namespace
       run: |
-        kubectl apply -f - <<EOF
-        apiVersion: v1
-        kind: Namespace
-        metadata:
-          name: "sock-shop"
-        EOF
-      
+       kubectl apply -f - <<EOF
+       apiVersion: v1
+       kind: Namespace
+       metadata:
+         name: "sock-shop" 
+       EOF
+
     - name: Apply Kubernetes manifests
       run: kubectl apply -f complete-demo.yaml
       working-directory: ./deploy/kubernetes
