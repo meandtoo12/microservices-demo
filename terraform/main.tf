@@ -59,7 +59,7 @@ azurerm_storage_container.data
 
 resource "azurerm_resource_group" "aks_rg" {
   name     = "aks-resource-group"
-  location = "East US"
+  location = "westeurope"
 }
 
 resource "azurerm_kubernetes_cluster" "aks_cluster" {
