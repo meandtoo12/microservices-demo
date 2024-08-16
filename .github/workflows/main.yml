@@ -41,12 +41,6 @@ jobs:
       run: terraform validate
       working-directory: ./terraform
 
-    - name: Terraform Plan
-      env:
-        ARM_ACCESS_KEY: ${{ secrets.AZURE_STORAGE_ACCESS_KEY }}
-      run: terraform plan -out=tfplan
-      working-directory: ./terraform
-
     - name: Terraform Apply
       env:
         ARM_ACCESS_KEY: ${{ secrets.AZURE_STORAGE_ACCOUNT_ACCESS_KEY }}
