@@ -71,7 +71,7 @@ resource "azurerm_kubernetes_cluster" "aks_cluster" {
   default_node_pool {
     name       = "default"
     node_count = 1
-    vm_size    = " Standard_DC4as_v5 "
+    vm_size    = "standard_dc2s_v2"
   }
 
   identity {
