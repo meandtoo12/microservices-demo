@@ -10,6 +10,7 @@ env:
   AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
   AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
   AZURE_STORAGE_ACCESS_KEY: ${{ secrets.AZURE_STORAGE_ACCESS_KEY }}
+  AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET}}
   AZURE_IDENTITY_NAME: my-github-action-identity
 
 jobs:
@@ -25,7 +26,7 @@ jobs:
 
     - name: Azure Login using Managed Identity
       run: |
-        az login --identity --username ${{ secrets.AZURE_CLIENT_ID }}
+        az login --service-principal -u ${{ secrets.AZURE_CLIENT_ID }} -p ${{ secrets.AZURE_CLIENT_SECRET}} -t ${{ secrets.AZURE_TENANT_ID }} 
         az account set --subscription ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
     - name: Terraform Init
