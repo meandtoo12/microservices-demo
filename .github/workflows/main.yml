@@ -58,6 +58,10 @@ jobs:
       run: |
         echo "${{ steps.tf-output.outputs.kube_config }}" > $HOME/.kube/config
         chmod 600 $HOME/.kube/config
+      shell: bash
+  
+    - name: Verify kubeconfig
+      run: kubectl config view
 
     - name: Apply Kubernetes manifests
       run: kubectl apply -f complete-demo.yaml
