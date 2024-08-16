@@ -59,15 +59,6 @@ jobs:
         echo "${{ steps.tf-output.outputs.kube_config }}" > $HOME/.kube/config
         chmod 600 $HOME/.kube/config
 
-    - name: Create Kubernetes namespace
-      run: |
-       kubectl apply -f - <<EOF
-       apiVersion: v1
-       kind: Namespace
-       metadata:
-         name: "sock-shop" 
-       EOF
-
     - name: Apply Kubernetes manifests
       run: kubectl apply -f complete-demo.yaml
       working-directory: ./deploy/kubernetes
