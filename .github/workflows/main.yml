@@ -17,58 +17,47 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v2
+      - name: Checkout code
+        uses: actions/checkout@v2
 
-    - name: Set up Terraform
-      uses: hashicorp/setup-terraform@v2
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v2
 
-    - name: Azure Login using Managed Identity
-      run: |
-        az login --service-principal -u ${{ secrets.AZURE_CLIENT_ID }} -p ${{ secrets.AZURE_CLIENT_SECRET}} -t ${{ secrets.AZURE_TENANT_ID }} 
-        az account set --subscription ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+      - name: Azure Login using Managed Identity
+        run: |
+          az login --service-principal -u ${{ secrets.AZURE_CLIENT_ID }} -p ${{ secrets.AZURE_CLIENT_SECRET}} -t ${{ secrets.AZURE_TENANT_ID }} 
+          az account set --subscription ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
-    - name: Terraform Init
-      env:
-        ARM_ACCESS_KEY: ${{ secrets.AZURE_STORAGE_ACCESS_KEY }}
-      run: terraform init  -var "subscription_id=${{ secrets.AZURE_SUBSCRIPTION_ID }}" -var "client_id=${{ secrets.AZURE_CLIENT_ID }}" -var "tenant_id=${{ secrets.AZURE_TENANT_ID }}"
-      working-directory: ./terraform
+      - name: Terraform Init
+        env:
+          ARM_ACCESS_KEY: ${{ secrets.AZURE_STORAGE_ACCESS_KEY }}
+        run: terraform init
+        working-directory: ./terraform
 
-    - name: Terraform Validate
-      env:
-        ARM_ACCESS_KEY: ${{ secrets.AZURE_STORAGE_ACCESS_KEY }}
-      run: terraform validate
-      working-directory: ./terraform
+      - name: Terraform Validate
+        env:
+          ARM_ACCESS_KEY: ${{ secrets.AZURE_STORAGE_ACCESS_KEY }}
+        run: terraform validate
+        working-directory: ./terraform
 
-    - name: Terraform Apply
-      env:
-        ARM_ACCESS_KEY: ${{ secrets.AZURE_STORAGE_ACCOUNT_ACCESS_KEY }}
-      run: terraform apply -auto-approve  
-      working-directory: ./terraform
+      - name: Terraform Apply
+        env:
+          ARM_ACCESS_KEY: ${{ secrets.AZURE_STORAGE_ACCOUNT_ACCESS_KEY }}
+        run: terraform apply -auto-approve
+        working-directory: ./terraform
 
-    - name: Terraform Output
-      id: tf-output
-      run: echo "::set-output name=kube_config::$(terraform output -raw kube_config)"
-      working-directory: ./terraform
+      - name: Get AKS Credentials
+        run: az get-credentials --resource-group aks-resource-group  --name aks-cluster
 
-    - name: Create .kube directory
-      run: mkdir -p $HOME/.kube
+      - name: Verify kubeconfig
+        run: kubectl config view
 
-    - name: Configure kubectl
-      run: |
-        echo "${{ steps.tf-output.outputs.kube_config }}" > $HOME/.kube/config
-        chmod 600 $HOME/.kube/config
-      shell: bash
-  
-    - name: Verify kubeconfig
-      run: kubectl config view
+      - name: Apply Kubernetes manifests
+        run: kubectl apply -f complete-demo.yaml
+        working-directory: ./deploy/kubernetes
 
-    - name: Apply Kubernetes manifests
-      run: kubectl apply -f complete-demo.yaml
-      working-directory: ./deploy/kubernetes
-
-    - name: Set up Azure Monitor for AKS
-      run: |
-        az aks enable-addons --resource-group aks-resource-group --name aks-cluster --addons monitoring
-        az monitor log-analytics workspace create --resource-group aks-resource-group --workspace-name aks-monitor
-      working-directory: ./terraform
+      - name: Set up Azure Monitor for AKS
+        run: |
+          az aks enable-addons --resource-group aks-resource-group --name aks-cluster --addons monitoring
+          az monitor log-analytics workspace create --resource-group aks-resource-group --workspace-name aks-monitor
+        working-directory: ./terraform
