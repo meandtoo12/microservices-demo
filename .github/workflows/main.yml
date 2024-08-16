@@ -47,7 +47,7 @@ jobs:
         working-directory: ./terraform
 
       - name: Get AKS Credentials
-        run: az get-credentials --resource-group aks-resource-group  --name aks-cluster
+        run: az aks get-credentials --resource-group aks-resource-group  --name aks-cluster
 
       - name: Verify kubeconfig
         run: kubectl config view
